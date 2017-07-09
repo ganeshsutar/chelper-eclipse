@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="CHelperEclipseCreateProjectWizard"
+            name="CHelperEclipse">
+      </category>
+      <wizard
+            category="CHelperEclipseCreateProjectWizard"
+            class="chelpereclipse.wizards.CreateProjectWizard"
+            icon="icons/newprj_wiz.gif"
+            id="CHelperEclipse.CreateJavaProject"
+            name="Java Project">
+      </wizard>
+   </extension>
+
+</plugin>
