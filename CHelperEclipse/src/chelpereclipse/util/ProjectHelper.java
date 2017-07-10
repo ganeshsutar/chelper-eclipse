@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
@@ -16,13 +17,13 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jdt.core.IClasspathEntry;
+import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaCore;
@@ -31,7 +32,15 @@ import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.LibraryLocation;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE;
 import org.osgi.framework.Bundle;
+
+import chelpereclipse.Activator;
 
 public class ProjectHelper {
 	public static final String BUNDLE_NAME = "CHelperEclipse";
@@ -84,16 +93,28 @@ public class ProjectHelper {
 	}
 	
 	public static String readFile(String filename) throws URISyntaxException, IOException {
-		Bundle bundle = Platform.getBundle(BUNDLE_NAME);
+		Bundle bundle = Activator.getDefault().getBundle();
 		URL fileUrl = bundle.getEntry(filename);
 		File file = new File(FileLocator.resolve(fileUrl).toURI());
 		return String.join("\n", Files.readAllLines(file.toPath()));
 	}
 	
-	public static void createMainFile(IJavaProject javaProject, String classFileName, String packageName, String templateFilename, IFolder srcFolder) throws JavaModelException, URISyntaxException, IOException {
+	public static ICompilationUnit createFile(IJavaProject javaProject, IFolder srcFolder, String classFileName, String packageName, String content) 
+			throws JavaModelException, URISyntaxException, IOException {
 		IPackageFragment pack  = javaProject.getPackageFragmentRoot(srcFolder).createPackageFragment(packageName, false, null);
-		String content = readFile(templateFilename);
-		pack.createCompilationUnit(classFileName, content, false, null);
+		return pack.createCompilationUnit(classFileName, content, false, null);
+	}
+	
+	public static void openCompilationUnit(ICompilationUnit cu) throws PartInitException {
+		IWorkbench workbench = PlatformUI.getWorkbench();
+		
+		IWorkbenchWindow activeWindow = workbench.getActiveWorkbenchWindow();
+		if( activeWindow == null ) return;
+
+		IWorkbenchPage page = activeWindow.getActivePage();
+		if( page != null ) {
+			IDE.openEditor(page, (IFile)cu.getResource());
+		}
 	}
 
 }
