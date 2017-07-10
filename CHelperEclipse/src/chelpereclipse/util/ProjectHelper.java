@@ -32,9 +32,8 @@ import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.LibraryLocation;
-import org.eclipse.ui.IWorkbench;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
@@ -106,15 +105,16 @@ public class ProjectHelper {
 	}
 	
 	public static void openCompilationUnit(ICompilationUnit cu) throws PartInitException {
-		IWorkbench workbench = PlatformUI.getWorkbench();
-		
-		IWorkbenchWindow activeWindow = workbench.getActiveWorkbenchWindow();
-		if( activeWindow == null ) return;
-
-		IWorkbenchPage page = activeWindow.getActivePage();
-		if( page != null ) {
-			IDE.openEditor(page, (IFile)cu.getResource());
-		}
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+				try {
+					IDE.openEditor(page, (IFile)cu.getResource());
+				} catch (PartInitException e) {
+					e.printStackTrace();
+				}
+			}
+		});
 	}
-
 }
